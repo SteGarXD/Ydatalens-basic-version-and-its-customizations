@@ -2,6 +2,8 @@
 
 Этот репозиторий содержит все кастомизации для Yandex DataLens Open Source, адаптированные под нужды ООО "Аэронавигатор".
 
+**GitHub:** https://github.com/SteGarXD/datalens-customizations
+
 ## Структура
 
 ```
@@ -48,4 +50,32 @@ npx patch-package
 ## Обновления
 
 См. `UPDATE_GUIDE.md` для инструкций по обновлению DataLens с сохранением кастомизаций.
+
+## Интеграция и деплой
+
+- `INTEGRATION_GUIDE.md` - подробное руководство по интеграции кастомизаций в DataLens
+- `DEPLOYMENT.md` - руководство по деплою на сервер bi.aeronavigator.ru
+- `scripts/apply-customizations.sh` - скрипт для применения кастомизаций
+- `scripts/update-datalens.sh` - скрипт для обновления DataLens с сохранением кастомизаций
+
+## Быстрый старт
+
+### Применение кастомизаций
+
+```bash
+# Клонировать репозиторий
+git clone https://github.com/SteGarXD/datalens-customizations.git
+cd datalens-customizations
+
+# Применить кастомизации
+chmod +x scripts/apply-customizations.sh
+DATALENS_DIR=/opt/datalens ./scripts/apply-customizations.sh
+```
+
+## CI/CD
+
+Репозиторий настроен с GitHub Actions:
+- Автоматическое обновление из upstream (каждое воскресенье)
+- Автоматический деплой при push в main
+- См. `.github/workflows/` для деталей
 
