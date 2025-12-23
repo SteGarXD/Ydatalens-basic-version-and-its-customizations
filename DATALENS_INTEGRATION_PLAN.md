@@ -81,7 +81,7 @@
 1. **Создать правильную точку входа:**
    ```typescript
    // customizations/index.ts
-   export const initializeCustomizations = async () => {
+   expoи rt const initializeCustomizations = async () => {
      // Загрузка брендинга
      await import('./aeronavigator/branding');
      
