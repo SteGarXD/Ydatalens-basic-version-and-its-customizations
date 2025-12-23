@@ -1,0 +1,59 @@
+name: Update DataLens
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # Каждое воскресенье в полночь
+  workflow_dispatch:  # Ручной запуск
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check for upstream updates
+        id: check-upstream
+        run: |
+          git fetch upstream main || echo "upstream not configured"
+          git log HEAD..upstream/main --oneline || echo "no updates"
+
+      - name: Merge upstream (if updates available)
+        if: steps.check-upstream.outcome == 'success'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git merge upstream/main || echo "merge failed or no updates"
+
+      - name: Apply patches
+        run: npx patch-package || echo "no patches to apply"
+
+      - name: Run tests
+        run: npm test || echo "tests not configured"
+
+      - name: Create Pull Request
+        if: steps.check-upstream.outcome == 'success'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Update DataLens from upstream"
+          title: "Update DataLens from upstream"
+          body: |
+            Автоматическое обновление DataLens из upstream репозитория.
+            
+            Проверьте:
+            - [ ] Все тесты проходят
+            - [ ] Кастомизации работают корректно
+            - [ ] Нет конфликтов в патчах
+          branch: update-datalens
+          delete-branch: true

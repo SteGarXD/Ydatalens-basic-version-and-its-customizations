@@ -1,0 +1,28 @@
+{
+  "name": "datalens-aeronavigator-customizations",
+  "version": "1.0.0",
+  "description": "Кастомизации DataLens для ООО \"Аэронавигатор\"",
+  "main": "customizations/index.ts",
+  "scripts": {
+    "postinstall": "patch-package",
+    "test": "echo \"Tests will be added later\"",
+    "build": "echo \"Build process will be integrated with DataLens build\"",
+    "update": "git pull upstream main && git merge main && npm install && npx patch-package"
+  },
+  "keywords": [
+    "datalens",
+    "bi",
+    "customization",
+    "aeronavigator"
+  ],
+  "author": "ООО \"Аэронавигатор\"",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0"
+  },
+  "dependencies": {
+    "@types/react": "^18.0.0",
+    "react": "^18.0.0"
+  }
+}

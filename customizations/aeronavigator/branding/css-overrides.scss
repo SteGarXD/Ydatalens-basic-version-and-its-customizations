@@ -1,0 +1,181 @@
+/**
+ * Глубокая визуальная кастомизация через CSS переопределения
+ * Все стили для полной адаптации под ООО "Аэронавигатор"
+ */
+
+@import './theme';
+
+/* ===== ЗАМЕНА ЛОГОТИПА И ТЕКСТА ===== */
+
+/* Скрыть стандартный логотип и текст Yandex DataLens */
+.dl-header-logo,
+.yc-header-logo,
+[class*="logo"],
+[data-testid*="logo"],
+[class*="yandex"],
+[class*="datalens"],
+[class*="open-source"],
+.dl-header-title,
+.yc-header-title,
+[class*="header-title"],
+[class*="brand-text"] {
+  display: none !important;
+}
+
+/* Добавить свой логотип */
+.dl-header,
+.yc-header,
+[class*="header"] {
+  position: relative;
+  
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-image: url('/OP-compass.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+  
+  &::after {
+    content: 'AeronavigatorBI';
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dl-text-primary);
+    vertical-align: middle;
+    margin-left: 0;
+  }
+}
+
+/* ===== СКРЫТИЕ "MEASURE NAMES" ===== */
+
+.dl-pivot-table .measure-names-header,
+.dl-pivot-table [class*="measure-names"],
+.dl-pivot-table [data-testid*="measure-names"],
+[class*="pivot"] [class*="measure-names"],
+[data-qa*="measure-names"] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ===== ИТОГИ СНИЗУ (4 строки "Итого") ===== */
+
+.dl-pivot-table .pivot-totals-row:first-child td:first-child,
+.dl-pivot-table [class*="totals-row"]:first-child td:first-child {
+  position: relative;
+  text-align: center;
+  
+  &::before {
+    content: 'Итого';
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-weight: bold;
+    z-index: 1;
+  }
+}
+
+.dl-pivot-table .pivot-totals-row:first-child td:nth-child(2),
+.dl-pivot-table [class*="totals-row"]:first-child td:nth-child(2) {
+  display: none !important;
+}
+
+.dl-pivot-table .pivot-totals-row:not(:first-child) td:first-child,
+.dl-pivot-table .pivot-totals-row:not(:first-child) td:nth-child(2) {
+  display: none !important;
+}
+
+/* ===== ИТОГИ СПРАВА (колонка "Итого") ===== */
+
+.dl-pivot-table .pivot-totals-col:first-child th:first-child,
+.dl-pivot-table [class*="totals-col"]:first-child th:first-child {
+  position: relative;
+  
+  &::before {
+    content: 'Итого';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 1;
+  }
+}
+
+.dl-pivot-table .pivot-totals-col:first-child th:nth-child(2),
+.dl-pivot-table [class*="totals-col"]:first-child th:nth-child(2) {
+  display: none !important;
+}
+
+.dl-pivot-table .pivot-totals-col:not(:first-child) th:first-child,
+.dl-pivot-table .pivot-totals-col:not(:first-child) th:nth-child(2) {
+  display: none !important;
+}
+
+/* ===== СКРЫТИЕ СУММ В ПРАВОМ УГЛУ ===== */
+
+.dl-pivot-table .pivot-totals-corner,
+.dl-pivot-table [class*="totals-corner"],
+.dl-pivot-table [class*="grand-total"],
+.dl-pivot-table [data-qa*="totals-corner"],
+.dl-pivot-table [data-qa*="grand-total"] {
+  display: none !important;
+}
+
+/* ===== НАСТРОЙКА ЦВЕТОВ (без градиента) ===== */
+
+.dl-pivot-table [class*="color-high"],
+.dl-pivot-table [class*="color-green"] {
+  background-color: #52c41a !important; /* Зеленый */
+  background-image: none !important;
+}
+
+.dl-pivot-table [class*="color-medium"],
+.dl-pivot-table [class*="color-yellow"] {
+  background-color: #faad14 !important; /* Желтый */
+  background-image: none !important;
+}
+
+.dl-pivot-table [class*="color-low"],
+.dl-pivot-table [class*="color-red"] {
+  background-color: #ff4d4f !important; /* Красный */
+  background-image: none !important;
+}
+
+/* ===== КОРПОРАТИВНЫЙ СТИЛЬ ===== */
+
+/* Применить цвета ООО "Аэронавигатор" */
+.dl-button-primary,
+.yc-button-primary {
+  background-color: var(--dl-color-primary);
+  border-color: var(--dl-color-primary);
+  
+  &:hover {
+    background-color: var(--dl-color-primary);
+    opacity: 0.9;
+  }
+}
+
+/* Адаптация под корпоративный портал */
+.aeronavigator-embedded {
+  .dl-header,
+  .yc-header {
+    background-color: var(--dl-background);
+    border-bottom: 1px solid var(--dl-border);
+  }
+}
+
