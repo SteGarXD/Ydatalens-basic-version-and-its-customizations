@@ -37,7 +37,14 @@ class FileUploadService:
         'html': {'extensions': ['.html', '.htm'], 'max_size_mb': 50},
     }
 
-    def __init__(self, clickhouse_client, temp_dir: str = '/tmp/datalens_uploads'):
+    def __init__(self, clickhouse_client=None, temp_dir: str = '/tmp/datalens_uploads'):
+        """
+        Инициализация сервиса загрузки файлов
+        
+        Args:
+            clickhouse_client: ClickHouse клиент (может быть None для предпросмотра)
+            temp_dir: Временная директория для загрузки файлов
+        """
         self.clickhouse_client = clickhouse_client
         self.temp_dir = Path(temp_dir)
         self.temp_dir.mkdir(parents=True, exist_ok=True)
@@ -225,6 +232,9 @@ class FileUploadService:
         database: str = 'datalens_uploads'
     ) -> Tuple[str, int]:
         """Загрузка DataFrame в ClickHouse"""
+        if not self.clickhouse_client:
+            raise ValueError("ClickHouse client is required for upload")
+        
         # Создать базу данных, если не существует
         self.clickhouse_client.execute(f"CREATE DATABASE IF NOT EXISTS {database}")
         

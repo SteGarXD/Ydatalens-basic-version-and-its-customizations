@@ -1,0 +1,13 @@
+diff --git a/src/index.tsx b/src/index.tsx
+index 0000000..1111111 100644
+--- a/src/index.tsx
++++ b/src/index.tsx
+@@ -1,3 +1,9 @@
++// AeronavigatorBI Customizations
++import { initializeCustomizations } from './customizations/integration';
++
++// Initialize customizations before app initialization
++initializeCustomizations().catch(err => console.error('Failed to initialize customizations:', err));
++
+ // Original DataLens code continues here...
+

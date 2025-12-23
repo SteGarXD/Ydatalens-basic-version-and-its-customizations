@@ -34,26 +34,38 @@ async def upload_file(
         if parseOptions:
             parse_options = json.loads(parseOptions)
         
-        # Инициализация сервиса
-        # Примечание: ClickHouse клиент должен быть получен из контекста DataLens
-        # Для интеграции с DataLens нужно использовать существующие механизмы подключения
+        # Инициализация сервиса с интеграцией DataLens
         try:
             from .file_upload_service import FileUploadService
+            from .integration import get_clickhouse_client
             
-            # TODO: Получить ClickHouse клиент из контекста DataLens
-            # clickhouse_client = get_clickhouse_client()  # Нужно реализовать
-            # service = FileUploadService(clickhouse_client)
+            # Получить ClickHouse клиент через механизмы DataLens
+            clickhouse_client = get_clickhouse_client()
             
-            # Временная реализация без ClickHouse (для тестирования)
-            # В production нужно интегрировать с реальным ClickHouse клиентом DataLens
-            return {
-                "datasetId": f"temp_{datasetName}",
-                "rowCount": 0,
-                "columns": [],
-                "message": "ClickHouse integration required - use DataLens connection mechanisms"
-            }
-        except ImportError:
+            if not clickhouse_client:
+                # Если клиент не доступен, возвращаем ошибку
+                raise HTTPException(
+                    status_code=503,
+                    detail="ClickHouse client not available. Please configure DataLens connection."
+                )
+            
+            # Инициализировать сервис
+            service = FileUploadService(clickhouse_client)
+            
+            # Обработать загрузку
+            result = await service.process_upload(
+                file, datasetName, format, parse_options, autoDetectTypes
+            )
+            
+            return result
+        except HTTPException:
+            raise
+        except ImportError as e:
+            logger.error(f"Import error: {e}")
             raise HTTPException(status_code=500, detail="FileUploadService not available")
+        except Exception as e:
+            logger.error(f"Error processing upload: {e}")
+            raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -74,21 +86,31 @@ async def preview_file(
         # Инициализация сервиса для предпросмотра
         try:
             from .file_upload_service import FileUploadService
+            from .integration import get_clickhouse_client
             
-            # TODO: Получить ClickHouse клиент из контекста DataLens
-            # clickhouse_client = get_clickhouse_client()
-            # service = FileUploadService(clickhouse_client)
-            # result = await service.preview_file(file, format, parse_options, previewRows)
+            # Получить ClickHouse клиент (для предпросмотра может быть не обязателен)
+            clickhouse_client = get_clickhouse_client()
             
-            # Временная реализация
-            return {
-                "columns": [],
-                "rowCount": 0,
-                "previewData": [],
-                "message": "ClickHouse integration required - use DataLens connection mechanisms"
-            }
-        except ImportError:
+            # Инициализировать сервис (клиент может быть None для предпросмотра)
+            service = FileUploadService(clickhouse_client) if clickhouse_client else None
+            
+            if service:
+                result = await service.preview_file(file, format, parse_options, previewRows)
+                return result
+            else:
+                # Предпросмотр без ClickHouse (только чтение файла)
+                from .file_upload_service import FileUploadService
+                # Создать временный сервис только для чтения
+                import tempfile
+                temp_service = FileUploadService(None, temp_dir=tempfile.gettempdir())
+                result = await temp_service.preview_file(file, format, parse_options, previewRows)
+                return result
+        except ImportError as e:
+            logger.error(f"Import error: {e}")
             raise HTTPException(status_code=500, detail="FileUploadService not available")
+        except Exception as e:
+            logger.error(f"Error previewing file: {e}")
+            raise HTTPException(status_code=500, detail=f"Error previewing file: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
