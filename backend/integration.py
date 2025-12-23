@@ -77,6 +77,19 @@ def register_customization_routers(app: FastAPI, prefix: str = "/api/v1"):
             tags=["customizations", "file-upload"]
         )
         
+        # Регистрируем роутер для ML сервисов
+        try:
+            from .ml_api import router as ml_router
+            app.include_router(
+                ml_router,
+                tags=["customizations", "ml"]
+            )
+            logger.info("ML routers registered successfully")
+        except ImportError as e:
+            logger.warning(f"ML routers not available (scikit-learn may not be installed): {e}")
+        except Exception as e:
+            logger.warning(f"Error registering ML routers: {e}")
+        
         logger.info("Customization routers registered successfully")
     except Exception as e:
         logger.error(f"Error registering customization routers: {e}")

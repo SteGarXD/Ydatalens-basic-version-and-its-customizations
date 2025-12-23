@@ -1,7 +1,7 @@
 /**
  * Anomaly Detection Module
  * Обнаружение аномалий в данных
- * Использует статистические методы (бесплатно, безопасно для РФ)
+ * Использует статистические методы и TensorFlow.js/scikit-learn (бесплатно, безопасно для РФ)
  */
 
 interface Anomaly {
@@ -148,7 +148,8 @@ export const detectAnomalies = async (
   data: any[],
   options?: {
     fields?: string[];
-    method?: 'zscore' | 'iqr' | 'isolation' | 'all';
+    method?: 'zscore' | 'iqr' | 'isolation' | 'tensorflow' | 'backend' | 'all';
+    useML?: boolean; // Использовать ML методы если доступны
     threshold?: number;
   }
 ): Promise<{
@@ -168,8 +169,9 @@ export const detectAnomalies = async (
     };
   }
   
-  const method = options?.method || 'all';
+  const method = options?.method || (options?.useML ? 'all' : 'all');
   const threshold = options?.threshold || 3;
+  const useML = options?.useML !== false; // По умолчанию используем ML если доступен
   
   // Определяем поля для анализа
   const fields = options?.fields || Object.keys(data[0] || {});
@@ -183,8 +185,43 @@ export const detectAnomalies = async (
   
   const allAnomalies: Anomaly[] = [];
   
-  // Применяем выбранный метод к каждому полю
+  // Пытаемся использовать ML методы если доступны
+  if (useML && numericFields.length > 0) {
+    // Пробуем TensorFlow.js для каждого поля
+    if (method === 'tensorflow' || method === 'all') {
+      for (const field of numericFields) {
+        try {
+          const mlAnomalies = await detectAnomaliesWithTensorFlow(data, field);
+          if (mlAnomalies.length > 0) {
+            allAnomalies.push(...mlAnomalies);
+            continue; // Пропускаем статистические методы для этого поля
+          }
+        } catch (error) {
+          // Продолжаем со статистическими методами
+        }
+      }
+    }
+    
+    // Пробуем backend scikit-learn
+    if (method === 'backend' || method === 'all') {
+      try {
+        const backendAnomalies = await detectAnomaliesWithBackend(data, numericFields);
+        if (backendAnomalies.length > 0) {
+          allAnomalies.push(...backendAnomalies);
+        }
+      } catch (error) {
+        // Продолжаем со статистическими методами
+      }
+    }
+  }
+  
+  // Применяем статистические методы к каждому полю (если ML не использовался или как дополнение)
   for (const field of numericFields) {
+    // Пропускаем если уже нашли аномалии через ML для этого поля
+    if (allAnomalies.some(a => a.field === field && a.type === 'isolation')) {
+      continue;
+    }
+    
     let fieldAnomalies: Anomaly[] = [];
     
     if (method === 'zscore' || method === 'all') {

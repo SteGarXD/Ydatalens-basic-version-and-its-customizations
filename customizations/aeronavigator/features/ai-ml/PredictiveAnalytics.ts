@@ -1,8 +1,89 @@
 /**
  * Predictive Analytics Module
  * Прогнозная аналитика
- * Использует статистические методы временных рядов (бесплатно, безопасно для РФ)
+ * Использует статистические методы, TensorFlow.js и scikit-learn (бесплатно, безопасно для РФ)
  */
+
+/**
+ * Прогнозирование с использованием TensorFlow.js
+ */
+const predictWithTensorFlow = async (
+  values: number[],
+  steps: number
+): Promise<{ predictions: number[]; confidence: number } | null> => {
+  try {
+    const { trainTimeSeriesModel, predictWithModel } = await import('./TensorFlowML');
+    
+    if (values.length < 20) return null;
+    
+    const lookback = Math.min(10, Math.floor(values.length / 3));
+    const model = await trainTimeSeriesModel(values, lookback);
+    
+    if (!model) return null;
+    
+    const predictions = await predictWithModel(model, values, steps, lookback);
+    model.dispose();
+    
+    return {
+      predictions,
+      confidence: 0.75
+    };
+  } catch (error) {
+    console.warn('[PredictiveAnalytics] TensorFlow.js not available:', error);
+    return null;
+  }
+};
+
+/**
+ * Прогнозирование через backend scikit-learn API
+ */
+const predictWithBackend = async (
+  values: number[],
+  steps: number,
+  lookback: number = 10
+): Promise<{ predictions: number[]; confidence: number } | null> => {
+  try {
+    // Обучение модели
+    const trainResponse = await fetch('/api/v1/ml/time-series/train', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: values,
+        lookback,
+        steps: 0
+      })
+    });
+    
+    if (!trainResponse.ok) {
+      throw new Error('Failed to train model');
+    }
+    
+    // Прогнозирование
+    const predictResponse = await fetch('/api/v1/ml/time-series/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: values,
+        lookback,
+        steps
+      })
+    });
+    
+    if (!predictResponse.ok) {
+      throw new Error('Failed to predict');
+    }
+    
+    const result = await predictResponse.json();
+    
+    return {
+      predictions: result.predictions,
+      confidence: result.confidence
+    };
+  } catch (error) {
+    console.warn('[PredictiveAnalytics] Backend ML not available:', error);
+    return null;
+  }
+};
 
 interface Prediction {
   date: string | number;
@@ -110,7 +191,8 @@ export const generatePredictions = async (
   options?: {
     field?: string;
     dateField?: string;
-    method?: 'linear' | 'exponential' | 'trend' | 'auto';
+    method?: 'linear' | 'exponential' | 'trend' | 'tensorflow' | 'backend' | 'auto';
+    useML?: boolean; // Использовать ML методы если доступны
   }
 ): Promise<{
   predictions: Prediction[];
@@ -159,13 +241,55 @@ export const generatePredictions = async (
     };
   }
   
-  const method = options?.method || 'auto';
+  const method = options?.method || (options?.useML !== false ? 'auto' : 'auto');
+  const useML = options?.useML !== false;
   let predictions: Prediction[] = [];
   let confidence = 0;
   let usedMethod = method;
   
-  // Линейная регрессия
-  if (method === 'linear' || method === 'auto') {
+  // Пытаемся использовать ML методы если доступны
+  if (useML && values.length >= 20) {
+    // TensorFlow.js
+    if (method === 'tensorflow' || method === 'auto') {
+      try {
+        const mlResult = await predictWithTensorFlow(values, forecastPeriod);
+        if (mlResult && mlResult.predictions.length > 0) {
+          predictions = mlResult.predictions.map((pred, i) => ({
+            date: values.length + i,
+            value: pred,
+            confidence: mlResult.confidence
+          }));
+          confidence = mlResult.confidence;
+          usedMethod = 'tensorflow';
+        }
+      } catch (error) {
+        // Продолжаем со статистическими методами
+      }
+    }
+    
+    // Backend scikit-learn
+    if ((method === 'backend' || (method === 'auto' && predictions.length === 0)) && values.length >= 20) {
+      try {
+        const backendResult = await predictWithBackend(values, forecastPeriod);
+        if (backendResult && backendResult.predictions.length > 0) {
+          predictions = backendResult.predictions.map((pred, i) => ({
+            date: values.length + i,
+            value: pred,
+            confidence: backendResult.confidence
+          }));
+          confidence = backendResult.confidence;
+          usedMethod = 'backend';
+        }
+      } catch (error) {
+        // Продолжаем со статистическими методами
+      }
+    }
+  }
+  
+  // Используем статистические методы если ML не доступен или как fallback
+  if (predictions.length === 0) {
+    // Линейная регрессия
+    if (method === 'linear' || method === 'auto') {
     const x = Array.from({ length: values.length }, (_, i) => i);
     const regression = linearRegression(x, values);
     

@@ -1,6 +1,7 @@
 /**
  * AI/ML Module
  * Интеграция AI и машинного обучения в DataLens
+ * Использует TensorFlow.js и scikit-learn (бесплатно, безопасно для РФ)
  * Превосходит возможности облачной версии
  */
 
@@ -15,6 +16,10 @@ export const initializeAIML = async () => {
   }
 
   try {
+    // Инициализация ML интеграции
+    const { initializeML } = await import('./MLIntegration');
+    await initializeML();
+    
     // Регистрация AI функций в DataLens
     if (typeof window !== 'undefined') {
       const datalens = (window as any).datalens || {};
@@ -28,12 +33,12 @@ export const initializeAIML = async () => {
         datalens.ai.autoInsights = await import('./AutoInsights');
       }
       
-      // Обнаружение аномалий
+      // Обнаружение аномалий (с TensorFlow.js и scikit-learn)
       if (AERONAVIGATOR_FEATURES.ANOMALY_DETECTION) {
         datalens.ai.anomalyDetection = await import('./AnomalyDetection');
       }
       
-      // Прогнозная аналитика
+      // Прогнозная аналитика (с TensorFlow.js и scikit-learn)
       if (AERONAVIGATOR_FEATURES.PREDICTIVE_ANALYTICS) {
         datalens.ai.predictiveAnalytics = await import('./PredictiveAnalytics');
       }
@@ -48,9 +53,19 @@ export const initializeAIML = async () => {
         datalens.ai.chartSuggestions = await import('./ChartSuggestions');
       }
       
+      // TensorFlow.js ML функции
+      try {
+        datalens.ai.tensorflow = await import('./TensorFlowML');
+      } catch (error) {
+        console.warn('[AeronavigatorBI] TensorFlow.js not available');
+      }
+      
+      // ML интеграция
+      datalens.ai.ml = await import('./MLIntegration');
+      
       (window as any).datalens = datalens;
       
-      console.log('[AeronavigatorBI] AI/ML module initialized');
+      console.log('[AeronavigatorBI] AI/ML module initialized with TensorFlow.js and scikit-learn support');
     }
   } catch (error) {
     console.error('[AeronavigatorBI] Error initializing AI/ML:', error);
