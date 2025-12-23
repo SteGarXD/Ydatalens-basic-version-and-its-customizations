@@ -15,6 +15,113 @@ interface Anomaly {
 }
 
 /**
+ * Обнаружение аномалий с использованием TensorFlow.js (если доступен)
+ */
+const detectAnomaliesWithTensorFlow = async (
+  data: any[],
+  field: string
+): Promise<Anomaly[]> => {
+  try {
+    // Динамический импорт TensorFlow.js
+    const { trainAnomalyDetectionModel, detectAnomaliesWithModel } = await import('./TensorFlowML');
+    
+    const values = data
+      .map((row, index) => ({
+        index,
+        value: typeof row[field] === 'number' ? row[field] : parseFloat(row[field])
+      }))
+      .filter(item => !isNaN(item.value))
+      .map(item => item.value);
+    
+    if (values.length < 10) return [];
+    
+    // Обучение модели
+    const model = await trainAnomalyDetectionModel(values);
+    if (!model) return [];
+    
+    // Обнаружение аномалий
+    const results = await detectAnomaliesWithModel(model, values, 0.1);
+    
+    // Очистка модели
+    model.dispose();
+    
+    return results
+      .filter(r => r.isAnomaly)
+      .map(r => ({
+        index: r.index,
+        field,
+        value: r.value,
+        deviation: r.error,
+        confidence: 1 - r.error,
+        type: 'isolation' as const
+      }));
+  } catch (error) {
+    console.warn('[AnomalyDetection] TensorFlow.js not available, using statistical methods:', error);
+    return [];
+  }
+};
+
+/**
+ * Обнаружение аномалий через backend scikit-learn API
+ */
+const detectAnomaliesWithBackend = async (
+  data: any[],
+  fields: string[]
+): Promise<Anomaly[]> => {
+  try {
+    // Подготовка данных для backend
+    const numericData: number[][] = data.map(row => {
+      return fields.map(field => {
+        const val = row[field];
+        return typeof val === 'number' ? val : parseFloat(val) || 0;
+      });
+    });
+    
+    // Обучение модели через API
+    const trainResponse = await fetch('/api/v1/ml/anomaly-detection/train', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: numericData,
+        contamination: 0.1
+      })
+    });
+    
+    if (!trainResponse.ok) {
+      throw new Error('Failed to train model');
+    }
+    
+    // Предсказание
+    const predictResponse = await fetch('/api/v1/ml/anomaly-detection/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(numericData)
+    });
+    
+    if (!predictResponse.ok) {
+      throw new Error('Failed to predict');
+    }
+    
+    const result = await predictResponse.json();
+    
+    // Преобразуем результаты
+    return result.predictions
+      .map((pred: any, index: number) => ({
+        index,
+        field: fields.join(', '),
+        value: data[index],
+        deviation: 1 - pred.confidence,
+        confidence: pred.confidence,
+        type: 'isolation' as const
+      }))
+      .filter((a: Anomaly) => a.confidence > 0.5);
+  } catch (error) {
+    console.warn('[AnomalyDetection] Backend ML not available, using statistical methods:', error);
+    return [];
+  }
+};
+
+/**
  * Z-Score метод обнаружения аномалий
  */
 const detectZScoreAnomalies = (data: any[], field: string, threshold: number = 3): Anomaly[] => {
