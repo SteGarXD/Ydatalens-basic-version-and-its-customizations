@@ -1,81 +1,31 @@
-# DataLens Customizations для ООО "Аэронавигатор"
+# Кастомизации и улучшения DataLens
 
-Этот репозиторий содержит все кастомизации для Yandex DataLens Open Source, адаптированные под нужды ООО "Аэронавигатор".
+Все кастомизации, улучшения и новые функции для Yandex DataLens.
 
-**GitHub:** https://github.com/SteGarXD/datalens-customizations
+## Ветка
 
-## Структура
+**Ветка:** `customizations`
 
-```
-datalens-customizations/
-├── customizations/
-│   ├── aeronavigator/          # Кастомизации для ООО "Аэронавигатор"
-│   │   ├── branding/           # Брендинг и логотипы
-│   │   ├── features/           # Дополнительные функции
-│   │   ├── flight-analytics/   # Специфичные функции для авиации
-│   │   ├── integrations/       # Интеграции с другими системами
-│   │   └── config.ts           # Конфигурация кастомизаций
-│   ├── patches/                # Патчи для мелких изменений
-│   └── migrations/             # Миграции для обновлений
-└── README.md
-```
+Эта ветка содержит все кастомизации и улучшения, которые будут объединены с базовой версией DataLens.
 
-## Установка
+## Содержимое
 
-1. Клонируйте официальный репозиторий DataLens:
-```bash
-git clone https://github.com/datalens-tech/datalens.git
-cd datalens
-```
-
-2. Скопируйте кастомизации:
-```bash
-cp -r ../datalens-customizations/customizations ./customizations
-```
-
-3. Установите зависимости:
-```bash
-npm install
-```
-
-4. Примените патчи (если есть):
-```bash
-npx patch-package
-```
+- ✅ Все кастомизации для ООО "Аэронавигатор"
+- ✅ Frontend модули (user management, RBAC, exports, etc.)
+- ✅ Backend сервисы (file upload API)
+- ✅ Миграции БД
+- ✅ Скрипты деплоя
+- ✅ Документация
+- ✅ CI/CD workflows
 
 ## Использование
 
-Все кастомизации загружаются автоматически через feature flags в `config.ts`.
+Эта ветка будет объединена с веткой `master` (базовая версия DataLens) на сервере.
 
-## Обновления
+## Репозиторий
 
-См. `UPDATE_GUIDE.md` для инструкций по обновлению DataLens с сохранением кастомизаций.
+**Единый репозиторий:** https://github.com/SteGarXD/Ydatalens-basic-version-and-its-customizations.git
 
-## Интеграция и деплой
-
-- `INTEGRATION_GUIDE.md` - подробное руководство по интеграции кастомизаций в DataLens
-- `DEPLOYMENT.md` - руководство по деплою на сервер bi.aeronavigator.ru
-- `scripts/apply-customizations.sh` - скрипт для применения кастомизаций
-- `scripts/update-datalens.sh` - скрипт для обновления DataLens с сохранением кастомизаций
-
-## Быстрый старт
-
-### Применение кастомизаций
-
-```bash
-# Клонировать репозиторий
-git clone https://github.com/SteGarXD/datalens-customizations.git
-cd datalens-customizations
-
-# Применить кастомизации
-chmod +x scripts/apply-customizations.sh
-DATALENS_DIR=/opt/datalens ./scripts/apply-customizations.sh
-```
-
-## CI/CD
-
-Репозиторий настроен с GitHub Actions:
-- Автоматическое обновление из upstream (каждое воскресенье)
-- Автоматический деплой при push в main
-- См. `.github/workflows/` для деталей
-
+**Ветки:**
+- `master` - Базовая версия Yandex DataLens (будет добавлена на сервере)
+- `customizations` - Все кастомизации (эта ветка)
