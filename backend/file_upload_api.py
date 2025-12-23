@@ -34,19 +34,26 @@ async def upload_file(
         if parseOptions:
             parse_options = json.loads(parseOptions)
         
-        # TODO: Инициализировать FileUploadService с ClickHouse клиентом
-        # service = FileUploadService(clickhouse_client)
-        # result = await service.process_upload(
-        #     file, datasetName, format, parse_options, autoDetectTypes
-        # )
-        
-        # Временная заглушка
-        return {
-            "datasetId": f"temp_{datasetName}",
-            "rowCount": 0,
-            "columns": [],
-            "message": "Backend integration required"
-        }
+        # Инициализация сервиса
+        # Примечание: ClickHouse клиент должен быть получен из контекста DataLens
+        # Для интеграции с DataLens нужно использовать существующие механизмы подключения
+        try:
+            from .file_upload_service import FileUploadService
+            
+            # TODO: Получить ClickHouse клиент из контекста DataLens
+            # clickhouse_client = get_clickhouse_client()  # Нужно реализовать
+            # service = FileUploadService(clickhouse_client)
+            
+            # Временная реализация без ClickHouse (для тестирования)
+            # В production нужно интегрировать с реальным ClickHouse клиентом DataLens
+            return {
+                "datasetId": f"temp_{datasetName}",
+                "rowCount": 0,
+                "columns": [],
+                "message": "ClickHouse integration required - use DataLens connection mechanisms"
+            }
+        except ImportError:
+            raise HTTPException(status_code=500, detail="FileUploadService not available")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -64,17 +71,24 @@ async def preview_file(
         if parseOptions:
             parse_options = json.loads(parseOptions)
         
-        # TODO: Инициализировать FileUploadService
-        # service = FileUploadService(clickhouse_client)
-        # result = await service.preview_file(file, format, parse_options, previewRows)
-        
-        # Временная заглушка
-        return {
-            "columns": [],
-            "rowCount": 0,
-            "previewData": [],
-            "message": "Backend integration required"
-        }
+        # Инициализация сервиса для предпросмотра
+        try:
+            from .file_upload_service import FileUploadService
+            
+            # TODO: Получить ClickHouse клиент из контекста DataLens
+            # clickhouse_client = get_clickhouse_client()
+            # service = FileUploadService(clickhouse_client)
+            # result = await service.preview_file(file, format, parse_options, previewRows)
+            
+            # Временная реализация
+            return {
+                "columns": [],
+                "rowCount": 0,
+                "previewData": [],
+                "message": "ClickHouse integration required - use DataLens connection mechanisms"
+            }
+        except ImportError:
+            raise HTTPException(status_code=500, detail="FileUploadService not available")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

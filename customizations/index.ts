@@ -1,14 +1,20 @@
 /**
  * Главный файл для загрузки всех кастомизаций
  * Использует feature flags для условной загрузки модулей
+ * 
+ * @deprecated Используйте initializeCustomizations из integration.ts
  */
 
 import { AERONAVIGATOR_FEATURES } from './aeronavigator/config';
+import { initializeCustomizations } from './integration';
 
 /**
  * Загружает все кастомизации на основе feature flags
+ * @deprecated Используйте initializeCustomizations из integration.ts
  */
 export const loadCustomizations = async () => {
+  // Перенаправляем на новую функцию интеграции
+  return initializeCustomizations();
   // Брендинг загружается всегда
   if (AERONAVIGATOR_FEATURES.BRANDING) {
     await import('./aeronavigator/branding/theme');
