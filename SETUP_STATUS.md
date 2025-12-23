@@ -68,7 +68,7 @@ DATALENS_DIR=/opt/datalens ./scripts/init-base-platform-git.sh
 
 # Создать репозиторий на GitHub и push
 cd /opt/datalens
-git remote add origin https://github.com/SteGarXD/datalens-aeronavigator-base.git
+git remote add origin https://github.com/SteGarXD/datalens-basic.git
 git push -u origin main
 git checkout -b aeronavigator-customizations
 git push -u origin aeronavigator-customizations

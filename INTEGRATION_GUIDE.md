@@ -14,7 +14,7 @@
 ```
 GitHub SteGarXD
 ├── datalens-customizations (этот репозиторий)
-└── datalens-aeronavigator-base (базовая платформа)
+└── datalens-basic (базовая платформа)
 
 Сервер bi.aeronavigator.ru
 ├── /opt/datalens/ (базовая платформа с Git)
@@ -108,11 +108,11 @@ git commit -m "Initial commit: Yandex DataLens base platform for Aeronavigator
 
 ### 2.3 Создание репозитория на GitHub
 
-1. Создайте репозиторий `datalens-aeronavigator-base` на GitHub (SteGarXD)
+1. Репозиторий `datalens-basic` уже создан на GitHub (SteGarXD)
 2. Настройте remote:
 
 ```bash
-git remote add origin https://github.com/SteGarXD/datalens-aeronavigator-base.git
+git remote add origin https://github.com/SteGarXD/datalens-basic.git
 git branch -M main
 git push -u origin main
 ```
