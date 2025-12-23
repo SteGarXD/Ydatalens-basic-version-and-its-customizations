@@ -207,6 +207,21 @@ const loadModules = async (): Promise<void> => {
     moduleLoaders.push(() => import('./aeronavigator/flight-analytics'));
   }
   
+  // S2 Pivot Table от Alibaba
+  if (AERONAVIGATOR_FEATURES.S2_PIVOT_TABLE) {
+    moduleLoaders.push(() => import('./aeronavigator/features/s2-pivot-table'));
+  }
+  
+  // AI/ML функции
+  if (AERONAVIGATOR_FEATURES.AI_ML) {
+    moduleLoaders.push(() => import('./aeronavigator/features/ai-ml'));
+  }
+  
+  // Real-time Collaboration
+  if (AERONAVIGATOR_FEATURES.COLLABORATION) {
+    moduleLoaders.push(() => import('./aeronavigator/features/collaboration'));
+  }
+  
   // Загрузить все модули параллельно
   await Promise.all(moduleLoaders.map(loader => loader().catch(err => {
     console.warn('[AeronavigatorBI] Failed to load module:', err);

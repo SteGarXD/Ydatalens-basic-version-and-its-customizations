@@ -1,0 +1,61 @@
+/**
+ * AI/ML Module
+ * Интеграция AI и машинного обучения в DataLens
+ * Превосходит возможности облачной версии
+ */
+
+import { AERONAVIGATOR_FEATURES } from '../../config';
+
+/**
+ * Инициализация AI/ML модуля
+ */
+export const initializeAIML = async () => {
+  if (!AERONAVIGATOR_FEATURES.AI_ML) {
+    return;
+  }
+
+  try {
+    // Регистрация AI функций в DataLens
+    if (typeof window !== 'undefined') {
+      const datalens = (window as any).datalens || {};
+      
+      if (!datalens.ai) {
+        datalens.ai = {};
+      }
+      
+      // Автоматические инсайты
+      if (AERONAVIGATOR_FEATURES.AUTO_INSIGHTS) {
+        datalens.ai.autoInsights = await import('./AutoInsights');
+      }
+      
+      // Обнаружение аномалий
+      if (AERONAVIGATOR_FEATURES.ANOMALY_DETECTION) {
+        datalens.ai.anomalyDetection = await import('./AnomalyDetection');
+      }
+      
+      // Прогнозная аналитика
+      if (AERONAVIGATOR_FEATURES.PREDICTIVE_ANALYTICS) {
+        datalens.ai.predictiveAnalytics = await import('./PredictiveAnalytics');
+      }
+      
+      // Запросы на естественном языке
+      if (AERONAVIGATOR_FEATURES.NATURAL_LANGUAGE_QUERY) {
+        datalens.ai.naturalLanguageQuery = await import('./NaturalLanguageQuery');
+      }
+      
+      // Автоматические предложения графиков
+      if (AERONAVIGATOR_FEATURES.AUTO_CHART_SUGGESTIONS) {
+        datalens.ai.chartSuggestions = await import('./ChartSuggestions');
+      }
+      
+      (window as any).datalens = datalens;
+      
+      console.log('[AeronavigatorBI] AI/ML module initialized');
+    }
+  } catch (error) {
+    console.error('[AeronavigatorBI] Error initializing AI/ML:', error);
+  }
+};
+
+export default initializeAIML;
+

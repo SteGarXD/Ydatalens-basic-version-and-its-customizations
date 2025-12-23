@@ -53,6 +53,40 @@ export const AERONAVIGATOR_FEATURES = {
   // Специфичные функции
   FLIGHT_ANALYTICS: true,
   MERIDIAN_INTEGRATION: true,
+  
+  // S2 Pivot Table от Alibaba
+  S2_PIVOT_TABLE: true,
+  
+  // AI/ML функции (превосходят облачную версию)
+  AI_ML: true,
+  AUTO_INSIGHTS: true,
+  ANOMALY_DETECTION: true,
+  PREDICTIVE_ANALYTICS: true,
+  NATURAL_LANGUAGE_QUERY: true,
+  AUTO_CHART_SUGGESTIONS: true,
+  SMART_DASHBOARD_GENERATION: true,
+  DATA_STORYTELLING: true,
+  
+  // Real-time Collaboration (превосходит облачную версию)
+  COLLABORATION: true,
+  REAL_TIME_EDITING: true,
+  PRESENCE_INDICATORS: true,
+  LIVE_COMMENTS: true,
+  CO_BROWSING: true,
+  
+  // Расширенные функции производительности
+  QUERY_CACHING: true,
+  INCREMENTAL_REFRESH: true,
+  PARALLEL_PROCESSING: true,
+  
+  // Расширенная безопасность
+  FIELD_LEVEL_SECURITY: true,
+  DATA_MASKING: true,
+  AUDIT_LOGGING: true,
+  
+  // Аналитика использования
+  USAGE_ANALYTICS: true,
+  PERFORMANCE_MONITORING: true,
 } as const;
 
 export const AERONAVIGATOR_BRANDING = {
