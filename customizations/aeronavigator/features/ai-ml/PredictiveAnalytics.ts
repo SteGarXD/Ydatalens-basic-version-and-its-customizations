@@ -423,6 +423,26 @@ export const generatePredictions = async (
     metrics = { mse, mae, mape };
   }
   
+  // Если ничего не получилось и статистические методы отключены, но ML тоже отключен
+  if (predictions.length === 0 && !useStatisticalFallback && !useML) {
+    console.warn('[PredictiveAnalytics] Both ML and statistical methods are disabled. Using statistical methods as last resort.');
+    // Используем простую линейную регрессию как последний вариант
+    const x = Array.from({ length: values.length }, (_, i) => i);
+    const regression = linearRegression(x, values);
+    
+    for (let i = 1; i <= forecastPeriod; i++) {
+      const futureX = values.length - 1 + i;
+      const predicted = regression.slope * futureX + regression.intercept;
+      predictions.push({
+        date: futureX,
+        value: predicted,
+        confidence: Math.max(0, Math.min(1, regression.r2))
+      });
+    }
+    confidence = regression.r2;
+    usedMethod = 'linear';
+  }
+  
   return {
     predictions,
     confidence: Math.max(0, Math.min(1, confidence)),
