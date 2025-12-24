@@ -34,47 +34,88 @@ export const isBackendMLAvailable = async (): Promise<boolean> => {
 /**
  * Получить лучший доступный метод для задачи
  */
-export const getBestMLMethod = async (task: 'anomaly' | 'forecast' | 'clustering'): Promise<{
-  method: 'tensorflow' | 'backend' | 'statistical';
+export const getBestMLMethod = async (
+  task: 'anomaly' | 'forecast' | 'clustering',
+  useStatisticalFallback: boolean = true
+): Promise<{
+  method: 'tensorflow' | 'backend' | 'statistical' | 'none';
   available: boolean;
+  reason?: string;
 }> => {
+  const { ML_CONFIG } = await import('../../config');
   const tfAvailable = await isTensorFlowAvailable();
   const backendAvailable = await isBackendMLAvailable();
   
   // Приоритет: backend (scikit-learn) > TensorFlow.js > статистические методы
   if (backendAvailable) {
-    return { method: 'backend', available: true };
+    return { 
+      method: 'backend', 
+      available: true,
+      reason: 'Backend scikit-learn available (highest priority)'
+    };
   }
   
   if (tfAvailable) {
-    return { method: 'tensorflow', available: true };
+    return { 
+      method: 'tensorflow', 
+      available: true,
+      reason: 'TensorFlow.js available (medium priority)'
+    };
   }
   
-  return { method: 'statistical', available: true };
+  if (useStatisticalFallback && ML_CONFIG.useStatisticalFallback) {
+    return { 
+      method: 'statistical', 
+      available: true,
+      reason: 'Statistical methods available as fallback (lowest priority)'
+    };
+  }
+  
+  return { 
+    method: 'none', 
+    available: false,
+    reason: 'No ML methods available and statistical fallback is disabled'
+  };
 };
 
 /**
  * Инициализация ML модулей
  */
 export const initializeML = async () => {
+  const { ML_CONFIG } = await import('../../config');
   const tfAvailable = await isTensorFlowAvailable();
   const backendAvailable = await isBackendMLAvailable();
   
-  if (tfAvailable) {
-    console.log('[AeronavigatorBI] TensorFlow.js available for ML');
-  }
+  const methods: string[] = [];
   
   if (backendAvailable) {
-    console.log('[AeronavigatorBI] Backend ML (scikit-learn) available');
+    methods.push('Backend scikit-learn (Priority 1)');
+    console.log('[AeronavigatorBI] Backend ML (scikit-learn) available - Priority 1');
   }
   
-  if (!tfAvailable && !backendAvailable) {
-    console.log('[AeronavigatorBI] Using statistical methods only (ML libraries not available)');
+  if (tfAvailable) {
+    methods.push('TensorFlow.js (Priority 2)');
+    console.log('[AeronavigatorBI] TensorFlow.js available - Priority 2');
+  }
+  
+  if (ML_CONFIG.useStatisticalFallback) {
+    methods.push('Statistical methods (Priority 3 - Fallback)');
+    console.log('[AeronavigatorBI] Statistical methods enabled as fallback - Priority 3');
+  } else {
+    console.log('[AeronavigatorBI] Statistical methods disabled in config');
+  }
+  
+  if (methods.length === 0) {
+    console.warn('[AeronavigatorBI] No ML methods available!');
+  } else {
+    console.log(`[AeronavigatorBI] Available methods: ${methods.join(', ')}`);
   }
   
   return {
     tensorflow: tfAvailable,
-    backend: backendAvailable
+    backend: backendAvailable,
+    statistical: ML_CONFIG.useStatisticalFallback,
+    methods: methods
   };
 };
 

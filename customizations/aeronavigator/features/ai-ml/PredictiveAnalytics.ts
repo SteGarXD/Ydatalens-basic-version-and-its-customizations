@@ -193,6 +193,7 @@ export const generatePredictions = async (
     dateField?: string;
     method?: 'linear' | 'exponential' | 'trend' | 'tensorflow' | 'backend' | 'auto';
     useML?: boolean; // Использовать ML методы если доступны
+    useStatisticalFallback?: boolean; // Использовать статистические методы как fallback (по умолчанию true)
   }
 ): Promise<{
   predictions: Prediction[];
@@ -286,8 +287,8 @@ export const generatePredictions = async (
     }
   }
   
-  // Используем статистические методы если ML не доступен или как fallback
-  if (predictions.length === 0) {
+  // Используем статистические методы если ML не доступен или как fallback (приоритет 3)
+  if (predictions.length === 0 && useStatisticalFallback) {
     // Линейная регрессия
     if (method === 'linear' || method === 'auto') {
     const x = Array.from({ length: values.length }, (_, i) => i);

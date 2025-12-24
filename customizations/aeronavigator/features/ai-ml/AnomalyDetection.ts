@@ -257,6 +257,7 @@ export const detectAnomalies = async (
     fields?: string[];
     method?: 'zscore' | 'iqr' | 'isolation' | 'tensorflow' | 'backend' | 'all';
     useML?: boolean; // Использовать ML методы если доступны
+    useStatisticalFallback?: boolean; // Использовать статистические методы как fallback (по умолчанию true)
     threshold?: number;
   }
 ): Promise<{
@@ -276,9 +277,14 @@ export const detectAnomalies = async (
     };
   }
   
+  // Импортируем конфигурацию
+  const { ML_CONFIG } = await import('../../config');
+  
   const method = options?.method || (options?.useML ? 'all' : 'all');
   const threshold = options?.threshold || 3;
   const useML = options?.useML !== false; // По умолчанию используем ML если доступен
+  const useStatisticalFallback = options?.useStatisticalFallback !== false && 
+    (ML_CONFIG.useStatisticalFallback !== false); // По умолчанию true, если включено в конфиге
   
   // Определяем поля для анализа
   const fields = options?.fields || Object.keys(data[0] || {});
@@ -292,7 +298,7 @@ export const detectAnomalies = async (
   
   const allAnomalies: Anomaly[] = [];
   
-  // Пытаемся использовать ML методы если доступны
+  // Пытаемся использовать ML методы если доступны (приоритет 1 и 2)
   if (useML && numericFields.length > 0) {
     // Пробуем TensorFlow.js для каждого поля
     if (method === 'tensorflow' || method === 'all') {
@@ -322,37 +328,68 @@ export const detectAnomalies = async (
     }
   }
   
-  // Применяем статистические методы к каждому полю (если ML не использовался или как дополнение)
-  for (const field of numericFields) {
-    // Пропускаем если уже нашли аномалии через ML для этого поля
-    if (allAnomalies.some(a => a.field === field && a.type === 'isolation')) {
-      continue;
-    }
-    
-    let fieldAnomalies: Anomaly[] = [];
-    
-    if (method === 'zscore' || method === 'all') {
-      fieldAnomalies.push(...detectZScoreAnomalies(data, field, threshold));
-    }
-    
-    if (method === 'iqr' || method === 'all') {
-      fieldAnomalies.push(...detectIQRAnomalies(data, field));
-    }
-    
-    if (method === 'isolation' || method === 'all') {
-      fieldAnomalies.push(...detectIsolationAnomalies(data, field));
-    }
-    
-    // Убираем дубликаты (одинаковые индексы)
-    const uniqueAnomalies = fieldAnomalies.reduce((acc, anomaly) => {
-      const existing = acc.find(a => a.index === anomaly.index && a.field === anomaly.field);
-      if (!existing || anomaly.confidence > existing.confidence) {
-        return acc.filter(a => !(a.index === anomaly.index && a.field === anomaly.field)).concat(anomaly);
+  // Применяем статистические методы к каждому полю (fallback, приоритет 3)
+  // Используем только если useStatisticalFallback === true
+  if (useStatisticalFallback) {
+    for (const field of numericFields) {
+      // Пропускаем если уже нашли аномалии через ML для этого поля
+      if (allAnomalies.some(a => a.field === field && a.type === 'isolation')) {
+        continue;
       }
-      return acc;
-    }, [] as Anomaly[]);
-    
-    allAnomalies.push(...uniqueAnomalies);
+      
+      let fieldAnomalies: Anomaly[] = [];
+      
+      if (method === 'zscore' || method === 'all') {
+        fieldAnomalies.push(...detectZScoreAnomalies(data, field, threshold));
+      }
+      
+      if (method === 'iqr' || method === 'all') {
+        fieldAnomalies.push(...detectIQRAnomalies(data, field));
+      }
+      
+      if (method === 'isolation' || method === 'all') {
+        fieldAnomalies.push(...detectIsolationAnomalies(data, field));
+      }
+      
+      // Убираем дубликаты (одинаковые индексы)
+      const uniqueAnomalies = fieldAnomalies.reduce((acc, anomaly) => {
+        const existing = acc.find(a => a.index === anomaly.index && a.field === anomaly.field);
+        if (!existing || anomaly.confidence > existing.confidence) {
+          return acc.filter(a => !(a.index === anomaly.index && a.field === anomaly.field)).concat(anomaly);
+        }
+        return acc;
+      }, [] as Anomaly[]);
+      
+      allAnomalies.push(...uniqueAnomalies);
+    }
+  } else if (allAnomalies.length === 0 && !useML) {
+    // Если ML отключен и статистические методы тоже отключены, но данных нет - используем статистику
+    console.warn('[AnomalyDetection] Both ML and statistical methods are disabled. Using statistical methods as last resort.');
+    for (const field of numericFields) {
+      let fieldAnomalies: Anomaly[] = [];
+      
+      if (method === 'zscore' || method === 'all') {
+        fieldAnomalies.push(...detectZScoreAnomalies(data, field, threshold));
+      }
+      
+      if (method === 'iqr' || method === 'all') {
+        fieldAnomalies.push(...detectIQRAnomalies(data, field));
+      }
+      
+      if (method === 'isolation' || method === 'all') {
+        fieldAnomalies.push(...detectIsolationAnomalies(data, field));
+      }
+      
+      const uniqueAnomalies = fieldAnomalies.reduce((acc, anomaly) => {
+        const existing = acc.find(a => a.index === anomaly.index && a.field === anomaly.field);
+        if (!existing || anomaly.confidence > existing.confidence) {
+          return acc.filter(a => !(a.index === anomaly.index && a.field === anomaly.field)).concat(anomaly);
+        }
+        return acc;
+      }, [] as Anomaly[]);
+      
+      allAnomalies.push(...uniqueAnomalies);
+    }
   }
   
   // Сортируем по уверенности

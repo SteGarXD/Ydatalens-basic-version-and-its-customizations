@@ -87,6 +87,9 @@ export const AERONAVIGATOR_FEATURES = {
   // Аналитика использования
   USAGE_ANALYTICS: true,
   PERFORMANCE_MONITORING: true,
+  
+  // Статистические методы (fallback для ML)
+  STATISTICAL_METHODS_FALLBACK: true, // Использовать статистические методы как fallback если ML недоступен
 } as const;
 
 export const AERONAVIGATOR_BRANDING = {
@@ -184,5 +187,33 @@ export const MERIDIAN_INTEGRATION_CONFIG = {
   syncUsers: true,
   syncInterval: 1800, // секунды (30 минут)
   rlsEnabled: true,
+} as const;
+
+/**
+ * Конфигурация ML методов
+ */
+export const ML_CONFIG = {
+  // Приоритет методов (1 = высший приоритет)
+  methodPriority: {
+    backend: 1,      // scikit-learn на backend (самый мощный)
+    tensorflow: 2,   // TensorFlow.js в браузере
+    statistical: 3,  // Статистические методы (fallback)
+  },
+  
+  // Использовать статистические методы как fallback
+  useStatisticalFallback: AERONAVIGATOR_FEATURES.STATISTICAL_METHODS_FALLBACK,
+  
+  // Минимальное количество данных для ML методов
+  minDataPointsForML: {
+    tensorflow: 20,
+    backend: 20,
+    statistical: 3,  // Статистические методы работают с меньшим количеством данных
+  },
+  
+  // Автоматический выбор метода
+  autoSelectMethod: true,
+  
+  // Логирование выбранного метода
+  logMethodSelection: process.env.NODE_ENV === 'development',
 } as const;
 
