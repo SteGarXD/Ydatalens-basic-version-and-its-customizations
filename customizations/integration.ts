@@ -291,13 +291,22 @@ const loadModules = async (): Promise<void> => {
     moduleLoaders.push(() => import('./aeronavigator/features/video-reports'));
   }
   
-  // Загрузить все модули параллельно
-  await Promise.all(moduleLoaders.map(loader => loader().catch(err => {
-    console.warn('[AeronavigatorBI] Failed to load module:', err);
-    return null;
-  })));
+  // Загрузить все модули параллельно и инициализировать их
+  const loadedModules = await Promise.all(moduleLoaders.map(async (loader) => {
+    try {
+      const module = await loader();
+      // Вызвать функцию инициализации, если она экспортирована как default
+      if (module && typeof module.default === 'function') {
+        await module.default();
+      }
+      return module;
+    } catch (err) {
+      console.warn('[AeronavigatorBI] Failed to load module:', err);
+      return null;
+    }
+  }));
   
-  console.log(`[AeronavigatorBI] Loaded ${moduleLoaders.length} modules`);
+  console.log(`[AeronavigatorBI] Loaded and initialized ${loadedModules.filter(m => m !== null).length} modules`);
 };
 
 /**
