@@ -222,6 +222,75 @@ const loadModules = async (): Promise<void> => {
     moduleLoaders.push(() => import('./aeronavigator/features/collaboration'));
   }
   
+  // ПРИОРИТЕТ 1: Критичные функции
+  if (AERONAVIGATOR_FEATURES.REALTIME_STREAMING) {
+    moduleLoaders.push(() => import('./aeronavigator/features/realtime-streaming'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.AUTOMATED_ALERTS) {
+    moduleLoaders.push(() => import('./aeronavigator/features/alerts'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.SCHEDULED_REPORTS) {
+    moduleLoaders.push(() => import('./aeronavigator/features/scheduled-reports'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.PRESCRIPTIVE_ANALYTICS) {
+    moduleLoaders.push(() => import('./aeronavigator/features/prescriptive-analytics'));
+  }
+  
+  // Расширение FLIGHT_ANALYTICS
+  if (AERONAVIGATOR_FEATURES.FLIGHT_ANALYTICS) {
+    moduleLoaders.push(() => import('./aeronavigator/features/flight-analytics-enhanced'));
+  }
+  
+  // ПРИОРИТЕТ 2: Очень полезные функции
+  if (AERONAVIGATOR_FEATURES.APACHE_ARROW) {
+    moduleLoaders.push(() => import('./aeronavigator/features/apache-arrow'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.PWA) {
+    moduleLoaders.push(() => import('./aeronavigator/features/pwa'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.AUTO_DASHBOARDS) {
+    moduleLoaders.push(() => import('./aeronavigator/features/auto-dashboards'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.GRAPH_ANALYTICS) {
+    moduleLoaders.push(() => import('./aeronavigator/features/graph-analytics'));
+  }
+  
+  // ПРИОРИТЕТ 3: Инновации
+  if (AERONAVIGATOR_FEATURES.VOICE_QUERIES) {
+    moduleLoaders.push(() => import('./aeronavigator/features/voice-queries'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.IOT_INTEGRATION) {
+    moduleLoaders.push(() => import('./aeronavigator/features/iot-integration'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.CALENDAR_INTEGRATION) {
+    moduleLoaders.push(() => import('./aeronavigator/features/calendar-integration'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.AUTO_DOCUMENTATION) {
+    moduleLoaders.push(() => import('./aeronavigator/features/auto-documentation'));
+  }
+  
+  // ПРИОРИТЕТ 4: WOW-фактор
+  if (AERONAVIGATOR_FEATURES.AR_VISUALIZATION) {
+    moduleLoaders.push(() => import('./aeronavigator/features/ar-visualization'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.THREE_D_ROUTES) {
+    moduleLoaders.push(() => import('./aeronavigator/features/three-d-routes'));
+  }
+  
+  if (AERONAVIGATOR_FEATURES.VIDEO_REPORTS) {
+    moduleLoaders.push(() => import('./aeronavigator/features/video-reports'));
+  }
+  
   // Загрузить все модули параллельно
   await Promise.all(moduleLoaders.map(loader => loader().catch(err => {
     console.warn('[AeronavigatorBI] Failed to load module:', err);

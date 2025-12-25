@@ -90,6 +90,29 @@ export const AERONAVIGATOR_FEATURES = {
   
   // Статистические методы (fallback для ML)
   STATISTICAL_METHODS_FALLBACK: true, // Использовать статистические методы как fallback если ML недоступен
+  
+  // ПРИОРИТЕТ 1: Критичные функции для платформы будущего
+  REALTIME_STREAMING: true, // Real-time Streaming Analytics
+  AUTOMATED_ALERTS: true, // Автоматические алерты и уведомления
+  SCHEDULED_REPORTS: true, // Планировщик отчетов
+  PRESCRIPTIVE_ANALYTICS: true, // Prescriptive Analytics (рекомендации действий)
+  
+  // ПРИОРИТЕТ 2: Очень полезные функции
+  APACHE_ARROW: true, // Apache Arrow транспорт
+  PWA: true, // Progressive Web App
+  AUTO_DASHBOARDS: true, // Автоматические дашборды
+  GRAPH_ANALYTICS: true, // Graph Analytics
+  
+  // ПРИОРИТЕТ 3: Инновации
+  VOICE_QUERIES: true, // Голосовые запросы
+  IOT_INTEGRATION: true, // Интеграция с IoT/датчиками
+  CALENDAR_INTEGRATION: true, // Интеграция с календарями
+  AUTO_DOCUMENTATION: true, // Автоматическое документирование
+  
+  // ПРИОРИТЕТ 4: WOW-фактор
+  AR_VISUALIZATION: true, // AR-визуализация
+  THREE_D_ROUTES: true, // 3D-визуализация маршрутов
+  VIDEO_REPORTS: true, // Автоматические видео-отчеты
 } as const;
 
 export const AERONAVIGATOR_BRANDING = {
